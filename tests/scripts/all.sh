@@ -1346,6 +1346,7 @@ component_build_psa_want_aes_drbg_disabled_software() {
     scripts/config.py set MBEDTLS_PSA_CRYPTO_DRIVERS
     scripts/config.py unset MBEDTLS_USE_PSA_CRYPTO
     scripts/config.py unset MBEDTLS_AES_C
+    scripts/config.py unset MBEDTLS_ARIA_C
     scripts/config.py unset MBEDTLS_CTR_DRBG_C
     scripts/config.py unset MBEDTLS_NIST_KW_C
     # Need to define the correct symbol and include the test driver header path in order to build with the test driver

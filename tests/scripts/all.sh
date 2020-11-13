@@ -1335,12 +1335,12 @@ component_build_psa_want_ecdsa_disabled_software() {
     make CC=gcc CFLAGS="$ASAN_CFLAGS -DPSA_CRYPTO_DRIVER_TEST -DMBEDTLS_PSA_ACCEL_ALG_ECDSA -DMBEDTLS_PSA_ACCEL_ALG_DETERMINISTIC_ECDSA -I../tests/include -O2" LDFLAGS="$ASAN_CFLAGS"
 }
 
-# This should be renamed to test and updated once the accelerator AES DRBG code is in place and ready to test.
-component_build_psa_want_aes_drbg_disabled_software() {
-    # full plus MBEDTLS_PSA_CRYPTO_CONFIG with PSA_WANT_ALG_AES_DRBG minus
+# This should be renamed to test and updated once the accelerator TRNG code is in place and ready to test.
+component_build_psa_accel_trng() {
+    # full plus MBEDTLS_PSA_CRYPTO_CONFIG with PSA_WANT_TRNG minus
     # MBEDTLS_AES_C, MBEDTLS_CTR_DRBG_C, and MBEDTLS_NIST_KW_C
-    # PSA_WANT_ALG_AES_DRBG is already set in include/psa/crypto_config.h
-    msg "build: full + MBEDTLS_PSA_CRYPTO_CONFIG + PSA_WANT_ALG_AES_DRBG without MBEDTLS_AES_C, MBEDTLS_CTR_DRBG_C, MBEDTLS_NIST_KW_C"
+    # PSA_WANT_TRNG is already set in include/psa/crypto_config.h
+    msg "build: full + MBEDTLS_PSA_CRYPTO_CONFIG + PSA_WANT_TRNG without MBEDTLS_AES_C, MBEDTLS_CTR_DRBG_C, MBEDTLS_NIST_KW_C"
     scripts/config.py full
     scripts/config.py set MBEDTLS_PSA_CRYPTO_CONFIG
     scripts/config.py set MBEDTLS_PSA_CRYPTO_DRIVERS
@@ -1350,7 +1350,7 @@ component_build_psa_want_aes_drbg_disabled_software() {
     scripts/config.py unset MBEDTLS_CTR_DRBG_C
     scripts/config.py unset MBEDTLS_NIST_KW_C
     # Need to define the correct symbol and include the test driver header path in order to build with the test driver
-    make CC=gcc CFLAGS="$ASAN_CFLAGS -DPSA_CRYPTO_DRIVER_TEST -DMBEDTLS_PSA_ACCEL_ALG_AES_DRBG -I../tests/include -O2" LDFLAGS="$ASAN_CFLAGS"
+    make CC=gcc CFLAGS="$ASAN_CFLAGS -DPSA_CRYPTO_DRIVER_TEST -DMBEDTLS_PSA_ACCEL_TRNG -I../tests/include -O2" LDFLAGS="$ASAN_CFLAGS"
 }
 
 

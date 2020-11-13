@@ -114,6 +114,16 @@ psa_status_t psa_driver_wrapper_cipher_finish(
 psa_status_t psa_driver_wrapper_cipher_abort(
     psa_operation_driver_context_t *operation );
 
+/*
+ * TRNG functions
+ */
+psa_status_t psa_driver_wrapper_trng_init( void );
+
+psa_status_t psa_driver_wrapper_trng_get(
+    uint8_t* buffer,
+    size_t buffer_length,
+    size_t* output_length );
+
 #endif /* PSA_CRYPTO_DRIVER_WRAPPERS_H */
 
 /* End of automatically generated file. */

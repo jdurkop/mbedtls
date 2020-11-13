@@ -93,7 +93,7 @@ static inline int safer_memcmp( const uint8_t *a, const uint8_t *b, size_t n )
     return( diff );
 }
 
-#if defined(MBEDTLS_PSA_BUILTIN_ALG_AES_DRBG)
+#if defined(MBEDTLS_PSA_BUILTIN_TRNG)
 /*
  * Map the PSA definitions to the mbedtls CTR DRBG versions if the
  * built in version of the AES DRBG feature is selected
@@ -112,40 +112,9 @@ typedef struct mbedtls_ctr_drbg_context psa_ctr_drbg_context;
  */
 typedef struct psa_ctr_drbg_context
 {
-    unsigned char counter[16];  /*!< The counter (V). */
-    int reseed_counter;         /*!< The reseed counter.
-                                 * This is the number of requests that have
-                                 * been made since the last (re)seeding,
-                                 * minus one.
-                                 * Before the initial seeding, this field
-                                 * contains the amount of entropy in bytes
-                                 * to use as a nonce for the initial seeding,
-                                 * or -1 if no nonce length has been explicitly
-                                 * set (see mbedtls_ctr_drbg_set_nonce_len()).
-                                 */
-    int prediction_resistance;  /*!< This determines whether prediction
-                                     resistance is enabled, that is
-                                     whether to systematically reseed before
-                                     each random generation. */
-    size_t entropy_len;         /*!< The amount of entropy grabbed on each
-                                     seed or reseed operation, in bytes. */
-    int reseed_interval;        /*!< The reseed interval.
-                                 * This is the maximum number of requests
-                                 * that can be made between reseedings. */
-
-    mbedtls_aes_context aes_ctx;        /*!< The AES context. */
-
-    /*
-     * Callbacks (Entropy)
-     */
-    int (*f_entropy)(void *, unsigned char *, size_t);
-                                /*!< The entropy callback function. */
-
-    void *p_entropy;            /*!< The context for the entropy function. */
-
-#if defined(MBEDTLS_THREADING_C)
-    mbedtls_threading_mutex_t mutex;
-#endif
+    uint8_t trng_init_complete;
+    uint8_t key[16];
+    void *ctxt;
 }
 psa_ctr_drbg_context;
 
@@ -155,40 +124,74 @@ psa_ctr_drbg_context;
  */
 void psa_ctr_drbg_init( psa_ctr_drbg_context *ctx )
 {
-    (void)ctx;
+    psa_driver_wrapper_trng_init( );
+    ctx->trng_init_complete = 1;
     return;
 }
 
 void psa_ctr_drbg_free( psa_ctr_drbg_context *ctx )
 {
-    (void)ctx;
+    ctx->trng_init_complete = 0;
     return;
 }
 
-int psa_ctr_drbg_seed( psa_ctr_drbg_context *ctx,
+int psa_ctr_drbg_seed( psa_ctr_drbg_context* ctx,
                        int (*f_entropy)(void *, unsigned char *, size_t),
                        void *p_entropy,
                        const unsigned char *custom,
                        size_t len )
 {
-    (void)ctx;
+    psa_status_t status;
+    size_t output_len = 0;
+
     (void)f_entropy;
     (void)p_entropy;
-    (void)custom;
-    (void)len;
+
+    if (ctx->trng_init_complete == 0)
+    {
+        return -1;
+    }
+
+    status = psa_driver_wrapper_trng_get((unsigned char*)custom, len,  &output_len );
+    if( status != PSA_SUCCESS )
+    {
+        return -1;
+    }
+
+    // Confirm outputlen is correct.
     return 0;
 }
 
 int psa_ctr_drbg_random( void *p_rng, unsigned char *output,
                          size_t output_len )
 {
-    (void)p_rng;
-    (void)output;
-    (void)output_len;
+    psa_status_t status;
+    psa_ctr_drbg_context* ctx = (psa_ctr_drbg_context*)p_rng;
+    size_t trng_out_len = 0;
+
+    if (ctx->trng_init_complete == 0)
+    {
+        return -1;
+    }
+
+    status = psa_driver_wrapper_trng_get(ctx->key, 16, &trng_out_len);
+    if( status != PSA_SUCCESS )
+    {
+        return -1;
+    }
+
+    if( trng_out_len != output_len )
+    {
+        return -1;
+    }
+
+    memcpy(output, ctx->key, 16);
+
+
     return 0;
 }
 
-#endif /* MBEDTLS_PSA_BUILTIN_ALG_AES_DRBG */
+#endif /* MBEDTLS_PSA_BUILTIN_TRNG */
 
 /****************************************************************/
 /* Global data, support functions and library management */

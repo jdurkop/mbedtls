@@ -937,4 +937,22 @@ psa_status_t psa_driver_wrapper_cipher_abort(
 #endif /* PSA_CRYPTO_DRIVER_PRESENT */
 }
 
+psa_status_t psa_driver_wrapper_trng_init( void )
+{
+    // Make call to trng_get(NULL, 0, NULL);
+    return( PSA_SUCCESS );
+}
+
+psa_status_t psa_driver_wrapper_trng_get(
+    uint8_t* buffer,
+    size_t buffer_length,
+    size_t* output_length )
+{
+    (void)buffer;
+    (void)buffer_length;
+    (void)output_length;
+    // Make call to trng_get
+    return( PSA_SUCCESS );
+}
+
 /* End of automatically generated file. */
